@@ -1,80 +1,73 @@
-# Pong Game - 1 or 2 Players
+# React + TypeScript + Vite
 
-A classic Pong game implementation with single-player AI and two-player modes, featuring sound effects and modern UI.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## How to Play
+Currently, two official plugins are available:
 
-1. Open `index.html` in a web browser
-2. Choose your game mode:
-   - **1 PLAYER** - Play against the computer AI
-   - **2 PLAYERS** - Play with a friend locally
-3. The mode selection will disappear and the game begins
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Controls
+## React Compiler
 
-### Single Player Mode
-- **Player (Left Paddle)**:
-  - `W` key - Move up
-  - `S` key - Move down
-- **Computer (Right Paddle)**: Controlled by AI
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-### Two Player Mode
-- **Player 1 (Left Paddle)**:
-  - `W` key - Move up
-  - `S` key - Move down
+## Expanding the ESLint configuration
 
-- **Player 2 (Right Paddle)**:
-  - `↑` Arrow Up - Move up
-  - `↓` Arrow Down - Move down
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Game Rules
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-- First player to score 11 points wins
-- Ball speed increases with each paddle hit
-- Ball angle changes based on where it hits the paddle
-- Sound effects play when:
-  - Ball hits a paddle
-  - Ball hits top/bottom walls
-  - A player scores
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-## Highscore System
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
 
-- Click **"VIEW HIGHSCORES"** button to open the highscore modal
-- **Single Player Mode**:
-  - Only wins against the computer are tracked
-  - Top 10 scores are saved (sorted by your score, then by computer's lowest score)
-  - Shows your final score vs the computer
-- **Two Player Mode**:
-  - Last 10 games are recorded
-  - Shows winner and final scores for each game
-- Highscores are saved in your browser's localStorage
-- Click **"Reset Highscores"** to clear all saved scores
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-## Features
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-- 🎮 Two game modes: Single-player vs AI or local multiplayer
-- 🤖 Intelligent AI opponent with adjustable difficulty
-- 🏆 Highscore tracking with localStorage persistence
-- 📊 Separate highscore charts for single-player and two-player modes
-- ✨ Modern, colorful UI with gradient backgrounds
-- 🎮 Smooth 60 FPS gameplay
-- 🔊 Web Audio API sound effects
-- 📊 Real-time score tracking
-- 🎯 Dynamic ball physics
-- 🏓 Responsive paddle controls
-
-## Technical Details
-
-- Pure vanilla JavaScript (no dependencies)
-- HTML5 Canvas for rendering
-- Web Audio API for sound generation
-- CSS3 for modern styling
-
-## Browser Compatibility
-
-Works in all modern browsers that support:
-- HTML5 Canvas
-- Web Audio API
-- ES6 JavaScript
-
-Enjoy the game!
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
