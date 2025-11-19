@@ -3,7 +3,6 @@ const canvas = document.getElementById('pong-canvas');
 const ctx = canvas.getContext('2d');
 const modeSelection = document.getElementById('mode-selection');
 const modeButtons = document.getElementById('mode-buttons');
-const zeroPlayerButton = document.getElementById('zero-player-button');
 const onePlayerButton = document.getElementById('one-player-button');
 const twoPlayerButton = document.getElementById('two-player-button');
 const difficultySelection = document.getElementById('difficulty-selection');
@@ -305,23 +304,12 @@ window.addEventListener('keyup', (e) => {
     keys[e.key] = false;
 });
 
-zeroPlayerButton.addEventListener('click', () => {
-    gameMode = 'zero';
-    document.querySelector('.player-label').textContent = 'AI 1';
-    player2Label.textContent = 'AI 2';
-    player2Controls.style.display = 'none';
-    // Hide mode buttons and show difficulty selection
-    modeButtons.classList.add('hidden');
-    difficultySelection.classList.remove('hidden');
-});
-
 onePlayerButton.addEventListener('click', () => {
     gameMode = 'single';
     document.querySelector('.player-label').textContent = 'Player 1';
     player2Label.textContent = 'Computer';
     player2Controls.style.display = 'none';
-    // Hide mode buttons and show difficulty selection
-    modeButtons.classList.add('hidden');
+    // Show difficulty selection
     difficultySelection.classList.remove('hidden');
 });
 
@@ -330,8 +318,11 @@ twoPlayerButton.addEventListener('click', () => {
     document.querySelector('.player-label').textContent = 'Player 1';
     player2Label.textContent = 'Player 2';
     player2Controls.style.display = 'flex';
-    // Two player mode doesn't need difficulty
-    startGame();
+    // Two player mode doesn't need difficulty, start immediately
+    gameRunning = false; // Stop current game
+    setTimeout(() => {
+        startGame();
+    }, 100);
 });
 
 // Difficulty button event listeners
@@ -343,14 +334,22 @@ difficultyButtons.forEach(button => {
 
         // Set difficulty and start game
         gameDifficulty = button.dataset.difficulty;
-        startGame();
+        gameRunning = false; // Stop current game
+        setTimeout(() => {
+            difficultySelection.classList.add('hidden');
+            startGame();
+        }, 100);
     });
 });
 
 function startGame() {
-    modeSelection.classList.add('hidden');
+    // Don't hide mode selection - keep it visible
     difficultySelection.classList.add('hidden');
     gameRunning = true;
+    player1Score = 0;
+    player2Score = 0;
+    score1Display.textContent = '0';
+    score2Display.textContent = '0';
     resetBall();
     gameLoop();
 }
@@ -621,23 +620,22 @@ async function checkWinner() {
         }
 
         setTimeout(async () => {
-            await showAlert(`${winner} wins! Final score: ${player1Score} - ${player2Score}`, 'Game Over');
+            if (gameMode !== 'zero') {
+                await showAlert(`${winner} wins! Final score: ${player1Score} - ${player2Score}`, 'Game Over');
+            }
+
+            // Reset scores
             player1Score = 0;
             player2Score = 0;
             score1Display.textContent = '0';
             score2Display.textContent = '0';
-            player2Controls.style.display = 'flex';
-            difficultySelection.classList.add('hidden');
-            modeButtons.classList.remove('hidden');
-            modeSelection.classList.remove('hidden');
-            // Reset difficulty to normal
-            gameDifficulty = 'normal';
-            difficultyButtons.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.difficulty === 'normal');
-            });
+
             // Reset combo
             resetCombo();
-        }, 100);
+
+            // Restart AI mode in background
+            startBackgroundAI();
+        }, gameMode === 'zero' ? 100 : 1000);
     }
 }
 
@@ -980,5 +978,17 @@ resetPurchasesBtn.addEventListener('click', async () => {
 loadPoints();
 loadPurchases();
 
-// Initial draw
-draw();
+// Start AI mode in background automatically
+function startBackgroundAI() {
+    gameMode = 'zero';
+    document.querySelector('.player-label').textContent = 'AI 1';
+    player2Label.textContent = 'AI 2';
+    player2Controls.style.display = 'none';
+    gameDifficulty = 'normal';
+    gameRunning = true;
+    resetBall();
+    gameLoop();
+}
+
+// Start background AI on page load
+startBackgroundAI();
