@@ -147,6 +147,51 @@ body {
     border-color: #667eea;
 }
 
+/* Game Type Selection */
+#game-type-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#game-type-selection.hidden {
+    display: none;
+}
+
+#game-type-selection h3 {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+.game-type-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.game-type-button {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    min-width: 100px;
+}
+
+.game-type-button:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.3);
+}
+
 #score-display {
     display: flex;
     gap: 60px;

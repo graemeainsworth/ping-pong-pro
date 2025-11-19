@@ -7,6 +7,9 @@ const onePlayerButton = document.getElementById('one-player-button');
 const twoPlayerButton = document.getElementById('two-player-button');
 const difficultySelection = document.getElementById('difficulty-selection');
 const difficultyButtons = document.querySelectorAll('.difficulty-button');
+const gameTypeSelection = document.getElementById('game-type-selection');
+const endlessButton = document.getElementById('endless-button');
+const firstTo10Button = document.getElementById('first-to-10-button');
 const score1Display = document.getElementById('score1');
 const score2Display = document.getElementById('score2');
 const player2Label = document.getElementById('player2-label');
@@ -87,6 +90,7 @@ const POINTS_VALUES = {
 let gameRunning = false;
 let gameMode = null; // 'zero', 'single' or 'multi'
 let gameDifficulty = 'normal'; // 'easy', 'normal', or 'hard'
+let gameType = 'endless'; // 'endless' or 'first-to-10'
 let player1Score = 0;
 let player2Score = 0;
 
@@ -318,11 +322,9 @@ twoPlayerButton.addEventListener('click', () => {
     document.querySelector('.player-label').textContent = 'Player 1';
     player2Label.textContent = 'Player 2';
     player2Controls.style.display = 'flex';
-    // Two player mode doesn't need difficulty, start immediately
+    // Two player mode goes straight to game type selection
     gameRunning = false; // Stop current game
-    setTimeout(() => {
-        startGame();
-    }, 100);
+    gameTypeSelection.classList.remove('hidden');
 });
 
 // Difficulty button event listeners
@@ -332,19 +334,36 @@ difficultyButtons.forEach(button => {
         difficultyButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
 
-        // Set difficulty and start game
+        // Set difficulty and show game type selection
         gameDifficulty = button.dataset.difficulty;
-        gameRunning = false; // Stop current game
-        setTimeout(() => {
-            difficultySelection.classList.add('hidden');
-            startGame();
-        }, 100);
+        difficultySelection.classList.add('hidden');
+        gameTypeSelection.classList.remove('hidden');
     });
+});
+
+// Game type button event listeners
+endlessButton.addEventListener('click', () => {
+    gameType = 'endless';
+    gameRunning = false; // Stop current game
+    setTimeout(() => {
+        gameTypeSelection.classList.add('hidden');
+        startGame();
+    }, 100);
+});
+
+firstTo10Button.addEventListener('click', () => {
+    gameType = 'first-to-10';
+    gameRunning = false; // Stop current game
+    setTimeout(() => {
+        gameTypeSelection.classList.add('hidden');
+        startGame();
+    }, 100);
 });
 
 function startGame() {
     // Don't hide mode selection - keep it visible
     difficultySelection.classList.add('hidden');
+    gameTypeSelection.classList.add('hidden');
     gameRunning = true;
     player1Score = 0;
     player2Score = 0;
@@ -598,20 +617,28 @@ function updateBall() {
 }
 
 async function checkWinner() {
-    if (player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
+    // Don't check for winner in endless mode
+    if (gameType === 'endless') {
+        return;
+    }
+
+    // Check for winner in first-to-10 mode
+    const winningScore = gameType === 'first-to-10' ? 10 : WINNING_SCORE;
+
+    if (player1Score >= winningScore || player2Score >= winningScore) {
         gameRunning = false;
         let winner;
         if (gameMode === 'single') {
-            winner = player1Score >= WINNING_SCORE ? 'You' : 'Computer';
+            winner = player1Score >= winningScore ? 'You' : 'Computer';
 
             // Award win bonus if player won
-            if (player1Score >= WINNING_SCORE) {
+            if (player1Score >= winningScore) {
                 awardPoints(POINTS_VALUES.WIN_MATCH, 'Won Match!');
             }
         } else if (gameMode === 'zero') {
-            winner = player1Score >= WINNING_SCORE ? 'AI 1' : 'AI 2';
+            winner = player1Score >= winningScore ? 'AI 1' : 'AI 2';
         } else {
-            winner = player1Score >= WINNING_SCORE ? 'Player 1' : 'Player 2';
+            winner = player1Score >= winningScore ? 'Player 1' : 'Player 2';
         }
 
         // Save highscore (don't save for zero player mode)
