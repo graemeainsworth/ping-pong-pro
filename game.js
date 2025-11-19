@@ -20,6 +20,13 @@ const singleScoresList = document.getElementById('single-scores-list');
 const multiScoresList = document.getElementById('multi-scores-list');
 const resetHighscoresBtn = document.getElementById('reset-highscores-btn');
 
+// Message modal elements
+const messageModal = document.getElementById('message-modal');
+const messageModalTitle = document.getElementById('message-modal-title');
+const messageModalText = document.getElementById('message-modal-text');
+const messageModalConfirm = document.getElementById('message-modal-confirm');
+const messageModalCancel = document.getElementById('message-modal-cancel');
+
 // Points system elements
 const totalPointsDisplay = document.getElementById('total-points');
 const sessionPointsDisplay = document.getElementById('session-points');
@@ -170,6 +177,61 @@ function playScoreSound() {
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
+}
+
+// ===== MESSAGE MODAL FUNCTIONS =====
+
+// Show alert modal (replacement for alert())
+function showAlert(message, title = 'Message') {
+    return new Promise((resolve) => {
+        messageModalTitle.textContent = title;
+        messageModalText.textContent = message;
+        messageModalConfirm.textContent = 'OK';
+        messageModalConfirm.style.display = 'block';
+        messageModalCancel.style.display = 'none';
+        messageModal.classList.remove('hidden');
+
+        const handleConfirm = () => {
+            messageModal.classList.add('hidden');
+            messageModalConfirm.removeEventListener('click', handleConfirm);
+            resolve();
+        };
+
+        messageModalConfirm.addEventListener('click', handleConfirm);
+    });
+}
+
+// Show confirm modal (replacement for confirm())
+function showConfirm(message, title = 'Confirm') {
+    return new Promise((resolve) => {
+        messageModalTitle.textContent = title;
+        messageModalText.textContent = message;
+        messageModalConfirm.textContent = 'Yes';
+        messageModalCancel.textContent = 'Cancel';
+        messageModalConfirm.style.display = 'block';
+        messageModalCancel.style.display = 'block';
+        messageModal.classList.remove('hidden');
+
+        const handleConfirm = () => {
+            messageModal.classList.add('hidden');
+            cleanup();
+            resolve(true);
+        };
+
+        const handleCancel = () => {
+            messageModal.classList.add('hidden');
+            cleanup();
+            resolve(false);
+        };
+
+        const cleanup = () => {
+            messageModalConfirm.removeEventListener('click', handleConfirm);
+            messageModalCancel.removeEventListener('click', handleCancel);
+        };
+
+        messageModalConfirm.addEventListener('click', handleConfirm);
+        messageModalCancel.addEventListener('click', handleCancel);
+    });
 }
 
 // ===== POINTS SYSTEM =====
@@ -493,7 +555,7 @@ function updateBall() {
     }
 }
 
-function checkWinner() {
+async function checkWinner() {
     if (player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
         gameRunning = false;
         let winner;
@@ -511,8 +573,8 @@ function checkWinner() {
         // Save highscore
         addHighscore(gameMode, winner, player1Score, player2Score);
 
-        setTimeout(() => {
-            alert(`${winner} win${winner === 'You' ? '' : 's'}! Final score: ${player1Score} - ${player2Score}`);
+        setTimeout(async () => {
+            await showAlert(`${winner} win${winner === 'You' ? '' : 's'}! Final score: ${player1Score} - ${player2Score}`, 'Game Over');
             player1Score = 0;
             player2Score = 0;
             score1Display.textContent = '0';
@@ -642,8 +704,9 @@ function displayHighscores() {
 }
 
 // Reset all highscores
-function resetHighscores() {
-    if (confirm('Are you sure you want to reset all highscores? This cannot be undone.')) {
+async function resetHighscores() {
+    const confirmed = await showConfirm('Are you sure you want to reset all highscores? This cannot be undone.', 'Reset Highscores');
+    if (confirmed) {
         saveHighscores([], []);
         displayHighscores();
     }
@@ -776,19 +839,19 @@ function updateShopDisplay() {
 }
 
 // Purchase item
-function purchaseItem(itemElement) {
+async function purchaseItem(itemElement) {
     const cost = parseInt(itemElement.dataset.cost);
     const type = itemElement.dataset.type;
     const value = itemElement.dataset.value;
     const name = itemElement.querySelector('.item-name').textContent;
 
     if (totalPoints < cost) {
-        alert('Not enough points!');
+        await showAlert('Not enough points!', 'Purchase Failed');
         return;
     }
 
     if (isOwned(itemElement.dataset.item)) {
-        alert('You already own this item!');
+        await showAlert('You already own this item!', 'Already Owned');
         return;
     }
 
@@ -810,7 +873,7 @@ function purchaseItem(itemElement) {
     updateShopDisplay();
     updatePointsDisplay();
 
-    alert(`Purchased: ${name}!`);
+    await showAlert(`Purchased: ${name}!`, 'Success');
 }
 
 // Shop modal event listeners
@@ -838,8 +901,9 @@ document.querySelectorAll('.buy-btn').forEach(btn => {
 });
 
 // Reset points button
-resetPointsBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to reset all points? This cannot be undone.')) {
+resetPointsBtn.addEventListener('click', async () => {
+    const confirmed = await showConfirm('Are you sure you want to reset all points? This cannot be undone.', 'Reset Points');
+    if (confirmed) {
         totalPoints = 0;
         sessionPoints = 0;
         savePoints();
@@ -849,8 +913,9 @@ resetPointsBtn.addEventListener('click', () => {
 });
 
 // Reset purchases button
-resetPurchasesBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to reset all purchases? You will NOT get refunded.')) {
+resetPurchasesBtn.addEventListener('click', async () => {
+    const confirmed = await showConfirm('Are you sure you want to reset all purchases? You will NOT get refunded.', 'Reset Purchases');
+    if (confirmed) {
         purchases = {
             ballColor: '#fff',
             paddleColor: '#fff',
@@ -859,7 +924,7 @@ resetPurchasesBtn.addEventListener('click', () => {
         savePurchases();
         applyPurchases();
         updateShopDisplay();
-        alert('All purchases have been reset!');
+        await showAlert('All purchases have been reset!', 'Reset Complete');
     }
 });
 

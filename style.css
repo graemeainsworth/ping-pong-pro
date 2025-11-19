@@ -547,3 +547,45 @@ body {
 .buy-btn.owned:hover {
     transform: none;
 }
+
+/* Message Modal Styles */
+.message-modal-content {
+    max-width: 450px;
+    text-align: center;
+}
+
+.message-modal-body {
+    padding: 30px 20px;
+    color: white;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+#message-modal-text {
+    margin: 0;
+    font-weight: 500;
+}
+
+.message-modal-footer {
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.primary-btn {
+    padding: 12px 40px;
+    background: white;
+    color: #667eea;
+    border: 2px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.primary-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.05);
+}

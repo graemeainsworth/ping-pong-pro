@@ -179,6 +179,22 @@
         </div>
     </div>
 
+    <!-- Message Modal (for alerts and confirmations) -->
+    <div id="message-modal" class="modal hidden">
+        <div class="modal-content message-modal-content">
+            <div class="modal-header">
+                <h2 id="message-modal-title">Message</h2>
+            </div>
+            <div class="message-modal-body">
+                <p id="message-modal-text"></p>
+            </div>
+            <div class="modal-footer message-modal-footer">
+                <button id="message-modal-confirm" class="primary-btn">OK</button>
+                <button id="message-modal-cancel" class="secondary-btn" style="display: none;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>
