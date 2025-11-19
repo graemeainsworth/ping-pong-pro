@@ -2,6 +2,7 @@
 const canvas = document.getElementById('pong-canvas');
 const ctx = canvas.getContext('2d');
 const modeSelection = document.getElementById('mode-selection');
+const modeButtons = document.getElementById('mode-buttons');
 const zeroPlayerButton = document.getElementById('zero-player-button');
 const onePlayerButton = document.getElementById('one-player-button');
 const twoPlayerButton = document.getElementById('two-player-button');
@@ -309,7 +310,8 @@ zeroPlayerButton.addEventListener('click', () => {
     document.querySelector('.player-label').textContent = 'AI 1';
     player2Label.textContent = 'AI 2';
     player2Controls.style.display = 'none';
-    // Show difficulty selection for zero player
+    // Hide mode buttons and show difficulty selection
+    modeButtons.classList.add('hidden');
     difficultySelection.classList.remove('hidden');
 });
 
@@ -318,7 +320,8 @@ onePlayerButton.addEventListener('click', () => {
     document.querySelector('.player-label').textContent = 'Player 1';
     player2Label.textContent = 'Computer';
     player2Controls.style.display = 'none';
-    // Show difficulty selection for single player
+    // Hide mode buttons and show difficulty selection
+    modeButtons.classList.add('hidden');
     difficultySelection.classList.remove('hidden');
 });
 
@@ -625,6 +628,7 @@ async function checkWinner() {
             score2Display.textContent = '0';
             player2Controls.style.display = 'flex';
             difficultySelection.classList.add('hidden');
+            modeButtons.classList.remove('hidden');
             modeSelection.classList.remove('hidden');
             // Reset difficulty to normal
             gameDifficulty = 'normal';
