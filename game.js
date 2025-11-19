@@ -2,6 +2,7 @@
 const canvas = document.getElementById('pong-canvas');
 const ctx = canvas.getContext('2d');
 const modeSelection = document.getElementById('mode-selection');
+const zeroPlayerButton = document.getElementById('zero-player-button');
 const onePlayerButton = document.getElementById('one-player-button');
 const twoPlayerButton = document.getElementById('two-player-button');
 const difficultySelection = document.getElementById('difficulty-selection');
@@ -84,7 +85,7 @@ const POINTS_VALUES = {
 
 // Game state
 let gameRunning = false;
-let gameMode = null; // 'single' or 'multi'
+let gameMode = null; // 'zero', 'single' or 'multi'
 let gameDifficulty = 'normal'; // 'easy', 'normal', or 'hard'
 let player1Score = 0;
 let player2Score = 0;
@@ -303,8 +304,18 @@ window.addEventListener('keyup', (e) => {
     keys[e.key] = false;
 });
 
+zeroPlayerButton.addEventListener('click', () => {
+    gameMode = 'zero';
+    document.querySelector('.player-label').textContent = 'AI 1';
+    player2Label.textContent = 'AI 2';
+    player2Controls.style.display = 'none';
+    // Show difficulty selection for zero player
+    difficultySelection.classList.remove('hidden');
+});
+
 onePlayerButton.addEventListener('click', () => {
     gameMode = 'single';
+    document.querySelector('.player-label').textContent = 'Player 1';
     player2Label.textContent = 'Computer';
     player2Controls.style.display = 'none';
     // Show difficulty selection for single player
@@ -313,6 +324,7 @@ onePlayerButton.addEventListener('click', () => {
 
 twoPlayerButton.addEventListener('click', () => {
     gameMode = 'multi';
+    document.querySelector('.player-label').textContent = 'Player 1';
     player2Label.textContent = 'Player 2';
     player2Controls.style.display = 'flex';
     // Two player mode doesn't need difficulty
@@ -383,17 +395,23 @@ function draw() {
 
 // Update functions
 function updatePaddles() {
-    // Player 1 controls (W/S)
-    if (keys['w'] || keys['W']) {
-        paddle1.dy = -PADDLE_SPEED;
-    } else if (keys['s'] || keys['S']) {
-        paddle1.dy = PADDLE_SPEED;
-    } else {
-        paddle1.dy = 0;
+    // Player 1 controls - either human or AI
+    if (gameMode === 'zero') {
+        // AI controls for paddle 1 in zero player mode
+        updateAI1();
+    } else if (gameMode === 'single' || gameMode === 'multi') {
+        // Player 1 controls (W/S)
+        if (keys['w'] || keys['W']) {
+            paddle1.dy = -PADDLE_SPEED;
+        } else if (keys['s'] || keys['S']) {
+            paddle1.dy = PADDLE_SPEED;
+        } else {
+            paddle1.dy = 0;
+        }
     }
 
     // Player 2 controls - either human or AI
-    if (gameMode === 'single') {
+    if (gameMode === 'single' || gameMode === 'zero') {
         // AI controls
         updateAI();
     } else {
@@ -416,7 +434,7 @@ function updatePaddles() {
     paddle2.y = Math.max(0, Math.min(canvas.height - paddle2.height, paddle2.y));
 }
 
-// AI logic for single-player mode
+// AI logic for single-player mode (right paddle / paddle 2)
 function updateAI() {
     const paddleCenter = paddle2.y + paddle2.height / 2;
     const ballY = ball.y;
@@ -435,6 +453,28 @@ function updateAI() {
         paddle2.dy = -aiSpeed;
     } else {
         paddle2.dy = 0;
+    }
+}
+
+// AI logic for left paddle (paddle 1) in zero player mode
+function updateAI1() {
+    const paddleCenter = paddle1.y + paddle1.height / 2;
+    const ballY = ball.y;
+
+    // Add some prediction - track where ball will be
+    const targetY = ballY;
+
+    // Get difficulty settings
+    const settings = DIFFICULTY_SETTINGS[gameDifficulty];
+    const deadZone = settings.AI_DEAD_ZONE;
+    const aiSpeed = settings.AI_SPEED;
+
+    if (paddleCenter < targetY - deadZone) {
+        paddle1.dy = aiSpeed;
+    } else if (paddleCenter > targetY + deadZone) {
+        paddle1.dy = -aiSpeed;
+    } else {
+        paddle1.dy = 0;
     }
 }
 
@@ -486,7 +526,7 @@ function updateBall() {
         // Prevent ball from getting stuck
         ball.x = paddle1.x + paddle1.width + ball.size;
 
-        // Award points for hitting ball (only in single player mode)
+        // Award points for hitting ball (only in single player mode, not zero player)
         if (gameMode === 'single') {
             lastHitByPlayer = true;
             updateCombo(true);
@@ -566,15 +606,19 @@ async function checkWinner() {
             if (player1Score >= WINNING_SCORE) {
                 awardPoints(POINTS_VALUES.WIN_MATCH, 'Won Match!');
             }
+        } else if (gameMode === 'zero') {
+            winner = player1Score >= WINNING_SCORE ? 'AI 1' : 'AI 2';
         } else {
             winner = player1Score >= WINNING_SCORE ? 'Player 1' : 'Player 2';
         }
 
-        // Save highscore
-        addHighscore(gameMode, winner, player1Score, player2Score);
+        // Save highscore (don't save for zero player mode)
+        if (gameMode !== 'zero') {
+            addHighscore(gameMode, winner, player1Score, player2Score);
+        }
 
         setTimeout(async () => {
-            await showAlert(`${winner} win${winner === 'You' ? '' : 's'}! Final score: ${player1Score} - ${player2Score}`, 'Game Over');
+            await showAlert(`${winner} wins! Final score: ${player1Score} - ${player2Score}`, 'Game Over');
             player1Score = 0;
             player2Score = 0;
             score1Display.textContent = '0';
